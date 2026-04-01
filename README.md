@@ -1,4 +1,4 @@
-![ChronoDecon Banner](https://github.com/TinaSong0590/ChronoDecon/raw/main/banner.png)
+![ChronoDecon Banner](https://github.com/TinaSong0590/ChronoDecon/banner.png)
 # ChronoDecon
 
 Chronological Deconvolution for Mass Spectrometry - A Python package implementing the modified correlation algorithm from the 2021 Analytical Chemistry paper for single component reconstruction.
