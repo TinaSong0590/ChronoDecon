@@ -15,7 +15,7 @@ Chronological Deconvolution for Mass Spectrometry - A Python package implementin
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/chrono-decon.git
+git clone https://github.com/TinaSong0590/ChronoDecon.git
 cd chrono-decon
 
 # Install in development mode
