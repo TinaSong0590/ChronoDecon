@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+bio_image_venv/
+miniconda3/
+Miniconda3-latest-Linux-x86_64.sh
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.raw
+*.mzML
+*.mgf
+*.msp
+*.html
+*.csv
+*.json
+*.md
+!README.md
+!LICENSE
+*.log
+*.pdf
+
+# Backup files
+openclaw_backup_*/
+*~
+
+# Test files
+test_*.py
+create_test_*.py
+try_*.py
+
+# Docker
+docker-compose.override.yml
+
+# Shell history
+.bash_history
+.zshrc
+.lesshst
+.wget-hsts
+.npmrc
+
+# CI/CD
+.github/workflows/*.yml
