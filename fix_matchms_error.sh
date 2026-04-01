@@ -38,7 +38,8 @@ echo ""
 
 # Step 4: Run environment diagnostic
 echo "[4/4] Running environment diagnostic..."
-$PYTHON_ENV diagnose_environment.py
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+$PYTHON_ENV "$SCRIPT_DIR/diagnose_environment.py"
 
 echo ""
 echo "========================================"
@@ -50,4 +51,5 @@ echo "Press Ctrl+C to stop"
 echo ""
 
 # Start the dashboard
+cd "$SCRIPT_DIR"
 $STREAMLIT_CMD run app.py

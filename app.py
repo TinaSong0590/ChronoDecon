@@ -15,20 +15,16 @@ import subprocess
 import os
 import sys
 
-# Add current directory to path
-current_dir = Path(__file__).parent
-if str(current_dir) not in sys.path:
-    sys.path.insert(0, str(current_dir))
-
-# Import ChronoDecon modules
+# Import ChronoDecon package
 try:
-    import decon
-    import library_search
-    from decon import deconvolute_mzml
-    from library_search import run_local_search, generate_html_report, generate_csv_report
+    from chrono_decon import decon
+    from chrono_decon import library_search
+    from chrono_decon.decon import deconvolute_mzml
+    from chrono_decon.library_search import run_local_search, generate_html_report, generate_csv_report
 except ImportError as e:
     st.error(f"Cannot import ChronoDecon module: {str(e)}")
     st.error(f"Python path: {sys.path}")
+    st.error("Make sure you run this from the repository root where 'chrono_decon/' is located.")
     st.stop()
 
 # Page configuration

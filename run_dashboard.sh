@@ -6,9 +6,13 @@ echo "  ChronoDecon Dashboard"
 echo "================================"
 echo ""
 
-# 检查是否在正确的目录
-if [ ! -f "app.py" ] || [ ! -f "decon.py" ]; then
-    echo "错误: 请在 chrono_decon 目录下运行此脚本"
+# 切换到仓库根目录（脚本所在目录）
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$REPO_ROOT"
+
+# 检查是否在仓库根目录
+if [ ! -f "app.py" ] || [ ! -d "chrono_decon" ]; then
+    echo "错误: 请在仓库根目录下运行此脚本（app.py 和 chrono_decon/ 应同目录）"
     echo "当前目录: $(pwd)"
     exit 1
 fi
@@ -37,4 +41,5 @@ echo ""
 echo "按 Ctrl+C 停止服务器"
 echo ""
 
+cd "$REPO_ROOT"
 $STREAMLIT_CMD run app.py
