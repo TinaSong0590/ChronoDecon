@@ -508,11 +508,18 @@ def run_local_search(
         Round high-res m/z to unit resolution (2 decimals) before matching.
         Helps bridge resolution gap between high-res query and unit-res library.
     """
-    from matchms.importing import load_from_mgf
-    from matchms.filtering import normalize_intensities, default_filters
-    from matchms import calculate_scores
-    from matchms.similarity import CosineGreedy
-    from matchms.Spectrum import Spectrum
+    try:
+        from matchms.importing import load_from_mgf
+        from matchms.filtering import normalize_intensities, default_filters
+        from matchms import calculate_scores
+        from matchms.similarity import CosineGreedy
+        from matchms.Spectrum import Spectrum
+    except ImportError as e:
+        raise ImportError(
+            "matchms is required for library search. "
+            "Please install it: pip install matchms\n"
+            f"Error: {e}"
+        )
 
     # Ensure library exists
     lib_path = ensure_library(library_path, proxy)
