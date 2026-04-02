@@ -1,118 +1,73 @@
+![ChronoDecon Banner](https://github.com/TinaSong0590/ChronoDecon/raw/main/chrono_decon/banner.png)
+
 # ChronoDecon
 
-Chronological Deconvolution for Mass Spectrometry - A Python package implementing the modified correlation algorithm from the 2021 Analytical Chemistry paper for single component reconstruction.
+**AI-Powered Single-Component Reconstruction for High-Resolution Mass Spectrometry**  
+**高分辨质谱单组分重建工具**
 
-## Features
+An open-source tool that implements the modified cross-correlation algorithm from the 2021 *Analytical Chemistry* paper (You et al.) to automatically extract clean single-component spectra from complex co-eluting LC-MS data.
 
-- **FFT-based Homologue Factor Calculation**: Uses cross-correlation to identify isotopic patterns
-- **Adaptive Threshold Determination**: Implements D-response function for optimal HThr calculation
-- **GNPS Library Integration**: Support for spectral matching against GNPS database
-- **Elemental Analysis**: Formula validation with PPM error calculation
-- **MCP Protocol Support**: Integration with AI agents and LangChain
-- **Rich Visualization**: Interactive HTML reports using Plotly
+---
 
-## Installation
+## 🌐 Web Dashboard (Recommended)
+
+No programming required — perfect for mass spectrometrists and lab researchers.
+
+**How to run locally:**
 
 ```bash
-# Clone the repository
 git clone https://github.com/TinaSong0590/ChronoDecon.git
-cd chrono-decon
-
-# Install in development mode
+cd ChronoDecon
 pip install -e .
-```
+streamlit run app.py
+Features:
 
-Or install with development dependencies:
-```bash
-pip install -e ".[dev]"
-```
+Drag-and-drop upload of .mzML files
+One-click full analysis: deconvolution + GNPS library search + elemental analysis
+Beautiful interactive visualization (summary, component list, detailed spectra)
 
-## Quick Start
 
-### Command Line Interface
+✨ Key Features
 
-```bash
-# Basic deconvolution
-chrono-decon deconvolute input.mzML -o results.json
+Single-component deconvolution using time-domain morphology and homologue factor (H-factor)
+Local GNPS spectral matching (zero external API calls)
+Pure local elemental composition analysis (RDKit-based)
+MCP Tool — can be directly called by AI agents (Claude, LangGraph, etc.)
+Streamlit Web Dashboard — user-friendly graphical interface (v0.2)
 
-# With custom parameters
-chrono-decon deconvolute input.mzML -h 0.9 -m 0.02 -o results.json
 
-# With visualization
-chrono-decon deconvolute input.mzML --visualize --viz-output plot.html
-```
+🚀 Quick Start
+1. Using the Web Dashboard (Recommended)
+Bashstreamlit run app.py
+2. Using Command Line
+Bashchrono-decon library-search --input your_sample.mzML
 
-### Python API
+📊 Example Results
+Tested on real amino acid mixture data:
 
-```python
-from chrono_decon import deconvolute_mzml
+Successfully identified 15 major components
+Main identifications include L-Methionine, L-Proline, L-Tryptophan, etc.
+Fully local execution, no external API required
 
-# Perform deconvolution
-result = deconvolute_mzml(
-    "path/to/file.mzML",
-    h_threshold=0.87,
-    min_intensity=0.01
-)
 
-# Access results
-print(f"Found {result['num_components']} components")
-```
+Installation
+Bashgit clone https://github.com/TinaSong0590/ChronoDecon.git
+cd ChronoDecon
+pip install -e .
 
-## Core Algorithm
+Roadmap
 
-### Homologue Factor
+v0.3 — Direct support for Thermo .raw files with automatic conversion
+v0.4 — Batch processing for multiple files
+v0.5 — Docker one-click deployment + VS Code plugin
 
-The `homologue_factor()` function calculates the similarity between two isotopic distributions using FFT-based cross-correlation:
 
-```python
-from chrono_decon import homologue_factor
-import numpy as np
-
-psi_a = np.array([100, 50, 10, 2, 1])
-psi_b = np.array([95, 48, 9, 3, 1])
-
-h_factor = homologue_factor(psi_a, psi_b)
-print(f"Homologue factor: {h_factor:.3f}")
-```
-
-### Deconvolution Workflow
-
-1. Parse mzML file and extract spectrum data
-2. Detect peaks in the spectrum
-3. Calculate homologue factors between peaks
-4. Group peaks into components using roulette wheel selection
-5. Return deconvolution results
-
-## Parameters
-
-- `h_threshold`: Homologue factor threshold for grouping (default: 0.87)
-- `min_intensity`: Minimum relative intensity threshold (0-1, default: 0.01)
-- `max_isotope_diff`: Maximum isotope position difference to consider (default: 15)
-
-## MCP Server Integration
-
-Start the MCP server for AI agent integration:
-
-```bash
-# Start MCP server
-python -m chrono_decon.mcp_tool
-```
-
-## Citation
-
+Citation
 If you use ChronoDecon in your research, please cite the original paper:
+You et al. (2021). Unsupervised Reconstruction of Analyte-Specific Mass Spectra Based on Time-Domain Morphology with a Modified Cross-Correlation Approach. Analytical Chemistry, 93(12), 5009–5014.
 
-> "Single Component Reconstruction from Mass Spectrometry Data Using Modified Correlation Analysis", Analytical Chemistry, 2021.
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Acknowledgments
-
-Based on the algorithm described in:
-"Single Component Reconstruction from Mass Spectrometry Data Using Modified Correlation Analysis", Analytical Chemistry, 2021.
+License: MIT License
+GitHub: TinaSong0590/ChronoDecon
+欢迎质谱研究者、AI + 科学计算爱好者一起参与贡献！
+Any feedback or collaboration is highly appreciated!
+text
