@@ -1,55 +1,55 @@
 #!/bin/bash
-# Quick fix script for "No module named 'matchms'" error
+# ChronoDecon Environment Fix Script
+# Diagnoses and fixes common dependency issues.
 
 echo "========================================"
-echo "  ChronoDecon Matchms Error Fix"
+echo "  ChronoDecon Environment Fix"
 echo "========================================"
 echo ""
 
-# Use miniconda3 environment (has matchms)
-PYTHON_ENV="/home/knan/miniconda3/bin/python3"
-PIP_CMD="/home/knan/miniconda3/bin/pip"
-STREAMLIT_CMD="/home/knan/miniconda3/bin/streamlit"
+PYTHON_CMD="${PYTHON_CMD:-python3}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Step 1: Stop all Streamlit processes
-echo "[1/4] Stopping Streamlit processes..."
+# Step 1: Stop stale Streamlit processes
+echo "[1/3] Stopping stale Streamlit processes..."
 pkill -f "streamlit run" 2>/dev/null
-echo "✓ Streamlit processes stopped"
-echo ""
+echo "  Done."
 
 # Step 2: Clear Streamlit cache
-echo "[2/4] Clearing Streamlit cache..."
+echo "[2/3] Clearing Streamlit cache..."
 rm -rf ~/.streamlit/cache/ 2>/dev/null
-echo "✓ Streamlit cache cleared"
+echo "  Done."
+
+# Step 3: Verify/install dependencies
+echo "[3/3] Checking dependencies..."
 echo ""
 
-# Step 3: Verify matchms installation
-echo "[3/4] Verifying matchms installation in miniconda3..."
-if $PYTHON_ENV -c "import matchms; print(matchms.__version__)" 2>/dev/null; then
-    echo "✓ matchms is installed"
-else
-    echo "✗ matchms is NOT installed"
-    echo ""
-    echo "Installing matchms..."
-    $PIP_CMD install matchms
-    echo ""
-fi
-echo ""
+check_and_install() {
+    local pkg=$1
+    if $PYTHON_CMD -c "import $pkg" 2>/dev/null; then
+        echo "  $pkg: OK"
+    else
+        echo "  $pkg: NOT FOUND - installing..."
+        $PYTHON_CMD -m pip install "$pkg"
+    fi
+}
 
-# Step 4: Run environment diagnostic
-echo "[4/4] Running environment diagnostic..."
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-$PYTHON_ENV "$SCRIPT_DIR/diagnose_environment.py"
+check_and_install "streamlit"
+check_and_install "matchms"
+check_and_install "pymzml"
+check_and_install "plotly"
+check_and_install "numpy"
+check_and_install "scipy"
+check_and_install "pandas"
 
 echo ""
 echo "========================================"
 echo "  Fix Complete!"
 echo "========================================"
 echo ""
-echo "Starting Dashboard with miniconda3 environment..."
-echo "Press Ctrl+C to stop"
+echo "Starting Dashboard..."
+echo "Press Ctrl+C to stop."
 echo ""
 
-# Start the dashboard
 cd "$SCRIPT_DIR"
-$STREAMLIT_CMD run app.py
+$PYTHON_CMD -m streamlit run app.py

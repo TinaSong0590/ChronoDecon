@@ -220,6 +220,17 @@ __marimo__/
 *.pdf
 !determineH_SI.pdf
 
+# Downloaded ThermoRawFileParser binary (auto-downloaded at runtime)
+chrono_decon/bin/
+
+# Privacy & credentials - NEVER commit these
+.env
+.env.*
+*.pem
+*.key
+.git-credentials
+.gitconfig
+
 # Backup files
 openclaw_backup_*/
 *~

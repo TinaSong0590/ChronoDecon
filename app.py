@@ -21,10 +21,12 @@ try:
     from chrono_decon import library_search
     from chrono_decon.decon import deconvolute_mzml
     from chrono_decon.library_search import run_local_search, generate_html_report, generate_csv_report
+    from chrono_decon.raw_converter import convert_raw_to_mzml
 except ImportError as e:
     st.error(f"Cannot import ChronoDecon module: {str(e)}")
     st.error(f"Python path: {sys.path}")
     st.error("Make sure you run this from the repository root where 'chrono_decon/' is located.")
+    st.error("Install with: pip install -e .")
     st.stop()
 
 # Page configuration
@@ -384,198 +386,10 @@ if "current_view" not in st.session_state:
     st.session_state.current_view = "upload"
 
 
-# ======================= RAW to MZML Conversion Functions =======================
-
-def convert_raw_to_mzml_thermoparser(raw_path, output_dir):
-    """Convert RAW file to mzML using ThermoRawFileParser (previously successful method).
-
-    This method was successfully used to convert sample_from_gdrive.raw on Mar 30 13:29.
-    Location: /home/knan/ThermoRawFileParser/ThermoRawFileParser
-    Command: ThermoRawFileParser -i input.raw -o /output/dir/ -f 2
-    (where -f 2 specifies mzML format)
-    """
-    raw_file = Path(raw_path)
-    output_path = Path(output_dir)
-    mzml_file = output_path / f"{raw_file.stem}.mzML"
-
-    # Find ThermoRawFileParser executable
-    parser_paths = [
-        "/home/knan/ThermoRawFileParser/ThermoRawFileParser",
-        "/home/knan/ThermoRawFileParser",
-        str(Path(__file__).parent.parent / "ThermoRawFileParser" / "ThermoRawFileParser"),
-    ]
-
-    parser_exe = None
-    for path in parser_paths:
-        if Path(path).exists():
-            parser_exe = path
-            break
-
-    if not parser_exe:
-        raise Exception(
-            "ThermoRawFileParser not found. Please download it from:\n"
-            "https://github.com/CompOmics/ThermoRawFileParser/releases\n"
-            "Extract to: /home/knan/ThermoRawFileParser/"
-        )
-
-    # Make sure it's executable
-    if not os.access(parser_exe, os.X_OK):
-        os.chmod(parser_exe, 0o755)
-
-    # Run ThermoRawFileParser
-    # -f 2 specifies mzML format
-    cmd = [
-        parser_exe,
-        '-i', str(raw_file),
-        '-o', str(output_path),
-        '-f', '2'
-    ]
-
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-
-        if result.returncode != 0:
-            # ThermoRawFileParser might output to stderr even on success
-            if not mzml_file.exists():
-                raise Exception(f"ThermoRawFileParser failed: {result.stderr}")
-
-        # Check for output file
-        if mzml_file.exists():
-            return str(mzml_file)
-        else:
-            # Try to find generated file
-            generated_files = list(output_path.glob("*.mzML"))
-            if generated_files:
-                return str(generated_files[0])
-            raise Exception("mzML file not found after conversion")
-
-    except subprocess.TimeoutExpired:
-        raise Exception("Conversion timeout (5 minutes)")
-    except Exception as e:
-        raise Exception(f"ThermoRawFileParser conversion failed: {str(e)}")
-
-
-def convert_raw_to_mzml_docker(raw_path, output_dir):
-    """Convert RAW file to mzML using Docker ProteoWizard."""
-    raw_file = Path(raw_path)
-    output_path = Path(output_dir)
-    
-    # Check if Docker is available
-    try:
-        result = subprocess.run(['docker', '--version'], 
-                              capture_output=True, text=True, timeout=5)
-        docker_available = result.returncode == 0
-    except:
-        docker_available = False
-    
-    if not docker_available:
-        raise Exception("Docker is not available. Please install Docker for RAW to mzML conversion.")
-    
-    # Docker conversion command
-    cmd = [
-        'docker', 'run', '--rm',
-        '-v', f'{raw_file.parent}:/data',
-        'proteme/proteowizard:latest',
-        'msconvert',
-        f'/data/{raw_file.name}',
-        '--mzML',
-        '-o', '/data/'
-    ]
-    
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        
-        if result.returncode != 0:
-            raise Exception(f"Docker conversion failed: {result.stderr}")
-        
-        # Check for output file
-        mzml_file = output_path / f"{raw_file.stem}.mzML"
-        if not mzml_file.exists():
-            # Also check if output is in original directory
-            mzml_file = raw_file.parent / f"{raw_file.stem}.mzML"
-        
-        if mzml_file.exists():
-            return str(mzml_file)
-        else:
-            raise Exception("mzML file not found after conversion")
-            
-    except subprocess.TimeoutExpired:
-        raise Exception("Conversion timeout (5 minutes)")
-    except Exception as e:
-        raise Exception(f"Conversion failed: {str(e)}")
-
-
-def convert_raw_to_mzml_pyopenms(raw_path, output_dir):
-    """Convert RAW file to mzML using PyOpenMS (local, no Docker required)."""
-    try:
-        from pyopenms import FileHandler, MzMLFile
-    except ImportError:
-        raise Exception("PyOpenMS is not installed. Please install it: pip install pyopenms")
-    
-    raw_file = Path(raw_path)
-    output_path = Path(output_dir)
-    mzml_file = output_path / f"{raw_file.stem}.mzML"
-    
-    try:
-        # Try to read and convert
-        file_handler = FileHandler()
-        
-        # Read the RAW file
-        file_handler.loadExperiment(str(raw_file))
-        experiment = file_handler.getExperiment()
-        
-        # Write as mzML
-        mzml_writer = MzMLFile()
-        mzml_writer.store(str(mzml_file), experiment)
-        
-        if mzml_file.exists():
-            return str(mzml_file)
-        else:
-            raise Exception("mzML file was not created")
-            
-    except Exception as e:
-        raise Exception(f"PyOpenMS conversion failed: {str(e)}")
-
-
-def convert_raw_to_mzml(raw_path, output_dir):
-    """Convert RAW file to mzML with fallback methods.
-
-    Priority (based on previous success):
-    1. ThermoRawFileParser (✅ Previously successful, no Docker/sudo needed)
-    2. PyOpenMS (local, no Docker required)
-    3. Docker ProteoWizard (requires Docker and sudo)
-
-    Reference: sample_from_gdrive.raw was successfully converted on Mar 30 13:29
-    using ThermoRawFileParser at /home/knan/ThermoRawFileParser/ThermoRawFileParser
-    """
-    # Method 1: Try ThermoRawFileParser (previously successful)
-    try:
-        st.info("🔄 Converting RAW to mzML using ThermoRawFileParser (previously successful)...")
-        return convert_raw_to_mzml_thermoparser(raw_path, output_dir)
-    except Exception as e:
-        st.warning(f"⚠️ ThermoRawFileParser failed: {str(e)}")
-
-    # Method 2: Try PyOpenMS (local, no Docker needed)
-    try:
-        st.info("🔄 Converting RAW to mzML using PyOpenMS (local)...")
-        return convert_raw_to_mzml_pyopenms(raw_path, output_dir)
-    except Exception as e:
-        st.warning(f"⚠️ PyOpenMS conversion failed: {str(e)}")
-
-    # Method 3: Try Docker
-    try:
-        st.info("🔄 Converting RAW to mzML using Docker...")
-        return convert_raw_to_mzml_docker(raw_path, output_dir)
-    except Exception as e:
-        st.error(f"❌ Docker conversion failed: {str(e)}")
-
-    # All methods failed
-    raise Exception(
-        "All conversion methods failed. Please:\n"
-        "1. Use online converter: https://msviewer.nws.oregonstate.edu/\n"
-        "2. Install Docker for ProteoWizard conversion\n"
-        "3. Or upload an .mzML file instead"
-    )
+# ======================= RAW to mzML Conversion =======================
+# Conversion is handled by chrono_decon.raw_converter module.
+# It supports: ThermoRawFileParser (auto-download), PyOpenMS (pip), Docker.
+# Users can set CHRONODECON_PROXY env var if network requires proxy.
 
 
 # ======================= Helper Functions =======================
@@ -1040,13 +854,18 @@ if start_analysis and uploaded_file is not None:
         
         # Convert if RAW file
         if is_raw:
-            with st.spinner("Converting RAW to mzML (this may take a few minutes)..."):
+            with st.spinner("Converting RAW to mzML (auto-detecting best method, may take a few minutes on first run)..."):
                 try:
                     mzml_path = convert_raw_to_mzml(str(saved_file), temp_path)
-                    st.info(f"✅ Converted {uploaded_file.name} to mzML")
+                    st.success(f"Converted {uploaded_file.name} to mzML successfully")
                 except Exception as e:
-                    st.error(f"❌ Conversion failed: {str(e)}")
-                    st.error("Please ensure Docker is installed and running.")
+                    st.error(f"RAW conversion failed: {str(e)}")
+                    st.info(
+                        "Tip: If auto-download fails, you can:\n"
+                        "  - Set CHRONODECON_PROXY env var for proxy support\n"
+                        "  - Install PyOpenMS: pip install pyopenms\n"
+                        "  - Or convert .raw to .mzML manually using ProteoWizard"
+                    )
                     st.stop()
         elif is_mzml:
             mzml_path = str(saved_file)
@@ -1292,6 +1111,6 @@ if st.session_state.analysis_complete:
 st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
 st.markdown("""
 <div style='text-align: center; padding: 20px; color: #94A3B8; font-size: 12px;'>
-    ChronoDecon v0.2.0 • Mass Spectrometry Analysis Platform
+    ChronoDecon v0.2.1 • Mass Spectrometry Analysis Platform
 </div>
 """, unsafe_allow_html=True)

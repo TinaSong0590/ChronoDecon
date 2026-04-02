@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chrono-decon"
-version = "0.1.0"
+version = "0.2.1"
 description = "Chronological Deconvolution for Mass Spectrometry - Modified correlation algorithm for single component reconstruction"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -38,6 +38,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+raw = [
+    "pyopenms>=2.8.0",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=3.0.0",
@@ -50,13 +53,16 @@ dev = [
 chrono-decon = "chrono_decon.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/chrono-decon"
-Documentation = "https://github.com/yourusername/chrono-decon#readme"
-Repository = "https://github.com/yourusername/chrono-decon"
-"Bug Tracker" = "https://github.com/yourusername/chrono-decon/issues"
+Homepage = "https://github.com/TinaSong0590/ChronoDecon"
+Documentation = "https://github.com/TinaSong0590/ChronoDecon#readme"
+Repository = "https://github.com/TinaSong0590/ChronoDecon"
+"Bug Tracker" = "https://github.com/TinaSong0590/ChronoDecon/issues"
 
 [tool.setuptools.packages.find]
 include = ["chrono_decon*"]
+
+[tool.setuptools.package-data]
+chrono_decon = ["bin/**/*"]
 
 [tool.black]
 line-length = 88
